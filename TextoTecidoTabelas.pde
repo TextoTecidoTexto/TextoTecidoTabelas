@@ -2,10 +2,21 @@
  * For information on usage and redistribution, and for a DISCLAIMER OF ALL
  * WARRANTIES, see the file, "LICENSE.txt," in this distribution.  */
 
+// Ctrl + v: cola texto da área de transferência (Clipboard)
+// Ctrl + t: ajusta tamanho do texto sobre qual o mouse está posicionado.
+// Ctrl + l: liga ou desliga as linhas de conexões (tecido)
+// Ctrl + mouse wheel: aumenta ou diminui o tamanho do texto.
+// Ctrl + delete: apaga todo texto.
+// mouse wheel: sobre ou desce o texto.
+// clique com botao esquerdo nas palavras seleciona ou desseleciona.
+// clique com botao direito nas palavras adiciona para a lista palavras ignoradas e ocultadas.
+
+//Importar bibliotecas para permitir ler o que foi colado com ctrl+C (clipboard)
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+
 import java.util.*;
 import java.util.Map;
 
