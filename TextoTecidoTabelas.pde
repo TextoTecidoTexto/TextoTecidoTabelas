@@ -7,7 +7,7 @@
 // Ctrl + l: liga ou desliga as linhas de conexões (tecido)
 // Ctrl + mouse wheel: aumenta ou diminui o tamanho do texto.
 // Ctrl + delete: apaga todo texto.
-// mouse wheel: sobre ou desce o texto.
+// mouse wheel: sobe ou desce o texto.
 // clique com botao esquerdo nas palavras seleciona ou desseleciona.
 // clique com botao direito nas palavras adiciona para a lista palavras ignoradas e ocultadas.
 
@@ -17,11 +17,15 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 
-import java.util.*;
+//Importa estruturas de dados não padrão do Processing.
+import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.Map;
+import java.util.Arrays;
 
 String texto = "";
 boolean atualizarLeioute = true;
+
 String quebraLinha = "\n\r\f";
 String separadoresPalavras = "'\"?!:,.;/() \b"+quebraLinha;
 String[] palavras;
@@ -103,6 +107,7 @@ boolean exibirStatusTecladoMouse = true;
 
 void setup()
 {
+//  size(1000,800);
   fullScreen();
   background (0);
   fonte500 = loadFont("Cantarell-Bold-500.vlw");
@@ -125,6 +130,7 @@ void draw()
   ultimoModificado = 0;
   larguraAreaTexto = margemDirTexto-margemEsqTexto;
   alturaAreaTexto = margemInfTexto-margemSupTexto;
+
   if (atualizarLeioute) {
     atualizarLeioute = !analisaTexto();
   }
@@ -337,6 +343,7 @@ void keyReleased() {
 } 
 
 boolean analisaTexto() {
+  print("analisaTexto();");
   boolean retorno = true;
   palavras = trim(splitTokens(texto, separadoresPalavras));
 
