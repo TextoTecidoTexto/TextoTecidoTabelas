@@ -82,7 +82,6 @@ PFont fonte8b;
 
 boolean ctrl = false;
 
-PVector[] conexoes;
 int numConexoes = 0;
 boolean desenhaTodasConexoesDasTagsVisiveis = false;
 //Se ultrapassar esse numero o programa passa a exibir somente selecionadas
@@ -344,8 +343,8 @@ void keyReleased() {
 
 // Identifica e conta a frequência de palavras.
 // Posiciona os caracteres na área de texto.
-// Quando o texto não cabe na área de texto, reajusta o tamanho e interrompe a análise.
-// Essa interrupção que dá o efeito de animação de preenchimento mais perceptível
+// Quando o texto não cabe na área de texto, reajusta o tamanho e interrompe (break no for) a análise.
+// Essa interrupção (break no for) que dá o efeito de animação de preenchimento mais perceptível
 // quando um texto grande é colado.
 boolean analisaTexto() {
   // Retorna verdadeiro se conseguiu encaixar o texto inteiro na área sem precisar ajustar tamanho.
@@ -361,11 +360,12 @@ boolean analisaTexto() {
   // array de palavras textoSeparadoPorPalavras.
   HashMap<String, Integer> palavrasComIndice = new HashMap<String, Integer>();
 
+  // Número total de linhas.
   numLinhas = 0;
 
+  // Inicia o array que guarda as posições dos caracteres em relação à tela (normalizada, entre 0 e 1).
   caracteresInfo = new Caractere[texto.length()];
 
-  conexoes = new PVector[texto.length()];
   numConexoes = 0;
 
   tags = new Tag[texto.length()];
@@ -813,7 +813,6 @@ Object GetFromClipboard (DataFlavor flavor) {
 
   return object;
 } 
-
 
 static final javax.swing.JFrame getJFrame(final PSurface surf) {
   return
