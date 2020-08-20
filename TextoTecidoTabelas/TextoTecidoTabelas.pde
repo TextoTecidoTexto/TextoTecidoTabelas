@@ -29,12 +29,12 @@ boolean atualizarLeioute = true;
 String quebraLinha = "\n\r\f";
 String separadoresPalavras = "'\"?!:,.;/() \b"+quebraLinha;
 String[] textoSeparadoPorPalavras;
-Tag[] tags;
+Palavra[] listaDePalavras;
 String[] IGNORAR = {};
 HashSet<String> palavrasIgnoradas;
 float tamTagMaisFreq = 0.05;
 int tagMouseEmCima = -1;
-int numTags = 0;
+int numPalavras = 0;
 int ultimaTagVisivel = 0;
 ArrayList<Integer> tagsSelecionadas;
 //https://stackoverflow.com/questions/36645938/collection-that-uses-listiterator-and-is-a-unique-list
@@ -69,7 +69,6 @@ PVector posTexto;
 PVector novaPosTexto;
 int posCursor;
 float alturaTexto = 0;
-int ultimoModificado = 0;
 int corInicialTags = 0;  //Vermelho
 int corFinalTags = 213;  //Violeta 
 
@@ -126,7 +125,6 @@ void draw()
   background(0);
   colorMode(HSB);
   fill(255, 0, 255);
-  ultimoModificado = 0;
   larguraAreaTexto = margemDirTexto-margemEsqTexto;
   alturaAreaTexto = margemInfTexto-margemSupTexto;
 
@@ -355,6 +353,10 @@ boolean analisaTexto() {
   // mantendo a ordem em que aparecem e as repetições.
   textoSeparadoPorPalavras = trim(splitTokens(texto, separadoresPalavras));
 
+  // Guarda o índice da palavra em textoSeparadoPorPalavras que está sendo analisada
+  // em cada iteração do for.
+  int palavraAtual = 0;
+  
   // Para auxiliar a contagem de freqüência das palavras, inicia estrutura palavrasComIndice
   // que guarda as palavras encontradas, sem repetí-las e guardando o índice correspondente no
   // array de palavras textoSeparadoPorPalavras.
@@ -366,20 +368,29 @@ boolean analisaTexto() {
   // Inicia o array que guarda as posições dos caracteres em relação à tela (normalizada, entre 0 e 1).
   caracteresInfo = new Caractere[texto.length()];
 
+  // Número total de conexoes.
   numConexoes = 0;
 
-  tags = new Tag[texto.length()];
-  numTags = 0;
+  // Inicia lista de palavras encontradas, sem repetição.
+  listaDePalavras = new Palavra[texto.length()];
+  
+  numPalavras = 0;  // Número total de palavras sem contar as repetições.
 
-  float larguraLinhaPx = 0;
-  alturaTexto = tamTexto;
-  PVector posVarredura = new PVector(0, alturaTexto);
-  int palavraAtual = 0;
+  float larguraLinhaPx = 0;  // largura da linha na tela em número de pixels
+  alturaTexto = tamTexto;  // altura que o texto realmente ocupa dentro da área.
+
+  // Guarda a posição normalizada em relação à tela (entre 0 e 1)
+  // em que deverá ser colocado o caractere atual de cada iteração do for.
+  PVector posVarredura = new PVector(0, alturaTexto);  
+  
+  // Informa se o caractere da iteração anterior era um separador de palavras.
   boolean caracAnteriorEhSeparador = true;
 
+  // Esse for percorre os caracteres da String texto.
+  // Quando detecta que o texto ultrapassa a área de texto, esse laço é interrompido
+  // e o texto é desenhado incompleto, recomeçando no próximo loop, já com o tamanho ajustado,
+  // criando o efeito de animação da área de texto sendo preenchida, ao passar dos quadros.
   for (int i=0; i<texto.length(); i++) {
-    ultimoModificado = i;
-
     //Checa se formou uma nova palavra:
     boolean caracAtualSeparaPalavras = false;
     if (match(""+texto.charAt(i), "["+separadoresPalavras+"]") != null) {
@@ -449,13 +460,13 @@ boolean analisaTexto() {
         int indicePalavra = palavraAtual;
         if (palavrasComIndice.get(textoSeparadoPorPalavras[indicePalavra])==null) {
           if (!palavrasIgnoradas.contains(textoSeparadoPorPalavras[indicePalavra])) {
-            tags[numTags] = new Tag(indicePalavra, i);
-            palavrasComIndice.put(textoSeparadoPorPalavras[indicePalavra], numTags);
-            numTags++;
+            listaDePalavras[numPalavras] = new Palavra(indicePalavra, i);
+            palavrasComIndice.put(textoSeparadoPorPalavras[indicePalavra], numPalavras);
+            numPalavras++;
             numConexoes++;
           }
         } else {
-          tags[palavrasComIndice.get(textoSeparadoPorPalavras[indicePalavra])].adicionarAparicao(i);
+          listaDePalavras[palavrasComIndice.get(textoSeparadoPorPalavras[indicePalavra])].adicionarAparicao(i);
           numConexoes++;
         }
         palavraAtual++;
@@ -467,7 +478,7 @@ boolean analisaTexto() {
   }
 
   // Ordena tags por frequencia decrescente.
-  Arrays.sort(tags, 0, numTags);
+  Arrays.sort(listaDePalavras, 0, numPalavras);
 
   if (palavraSelecionadaAtual == null && palavrasSelecionadas.size() > 0) {
     palavraSelecionadaAtual = palavrasSelecionadas.first();
@@ -509,9 +520,9 @@ void ajustaPosCaracteres() {
     }
   }
   // Calcula tamanho das tags baseada no tamanho fixo da tag mais frequente;
-  if (tags != null & tags.length>0) {
-    if (tags[0] != null) {
-      tamTags = tamTagMaisFreq/tags[0].frequencia;
+  if (listaDePalavras != null & listaDePalavras.length>0) {
+    if (listaDePalavras[0] != null) {
+      tamTags = tamTagMaisFreq/listaDePalavras[0].frequencia;
     }
   }
   textSize(tamTags*height);
@@ -526,14 +537,14 @@ void ajustaPosCaracteres() {
     tamEspectroCores = textoSeparadoPorPalavras.length*tamTags;
     //posVarredura.y = 0.5 - tamEspectroCores/2.0;
   }
-  for (int i=0; i<numTags; i++) {
+  for (int i=0; i<numPalavras; i++) {
     if (textoSeparadoPorPalavras != null) {
-      if (tags[i] != null) {
-        if (textoSeparadoPorPalavras[tags[i].palavra] != null) {
-          float alturaTag = tags[i].frequencia*tamTags;
+      if (listaDePalavras[i] != null) {
+        if (textoSeparadoPorPalavras[listaDePalavras[i].palavra] != null) {
+          float alturaTag = listaDePalavras[i].frequencia*tamTags;
 
           //posVarredura.y -= 0.5;
-          tags[i].matiz = int((corFinalTags-corInicialTags)*posVarredura.y/(float)tamEspectroCores);
+          listaDePalavras[i].matiz = int((corFinalTags-corInicialTags)*posVarredura.y/(float)tamEspectroCores);
           //posVarredura.y += 0.5;
 
           if (posVarredura.y <= 1) {
@@ -544,23 +555,23 @@ void ajustaPosCaracteres() {
           posVarredura.x = margemDirTexto;
           posVarredura.y += alturaTag;
           textSize(alturaTag*height);
-          tags[i].retangulo[0] = new PVector(margemEsqTags, posVarredura.y-alturaTag);
-          tags[i].retangulo[1] = new PVector(margemDirTags, posVarredura.y);
-          if (mouseEmCima (tags[i].retangulo[0].x*width, tags[i].retangulo[0].y*height, 
-            tags[i].retangulo[1].x*width, tags[i].retangulo[1].y*height)) {
+          listaDePalavras[i].retangulo[0] = new PVector(margemEsqTags, posVarredura.y-alturaTag);
+          listaDePalavras[i].retangulo[1] = new PVector(margemDirTags, posVarredura.y);
+          if (mouseEmCima (listaDePalavras[i].retangulo[0].x*width, listaDePalavras[i].retangulo[0].y*height, 
+            listaDePalavras[i].retangulo[1].x*width, listaDePalavras[i].retangulo[1].y*height)) {
             tagMouseEmCima = i;
-            tags[i].mouseEmCima = true;
+            listaDePalavras[i].mouseEmCima = true;
             if (mousePressed) {
-              tags[i].mouseClicando = true;
+              listaDePalavras[i].mouseClicando = true;
             }
           } else {
-            tags[i].mouseEmCima = false;
+            listaDePalavras[i].mouseEmCima = false;
             if (mousePressed) {
-              tags[i].mouseClicando = false;
+              listaDePalavras[i].mouseClicando = false;
             }
           }
-          tags[i].pos.x = posVarredura.x;
-          tags[i].pos.y = posVarredura.y;
+          listaDePalavras[i].pos.x = posVarredura.x;
+          listaDePalavras[i].pos.y = posVarredura.y;
         }
       }
     }
@@ -570,9 +581,9 @@ void ajustaPosCaracteres() {
   //Percorre tagsSelecionadas para adicionar as palavrasSelecionadas do texto.
   for (int j=0; j<tagsSelecionadas.size(); j++) {
     //adiciona as palavras do texto correspondente a essa tag em palavrasSelecionadas
-    if (tags[tagsSelecionadas.get(j)] != null) {
-      for (int i=0; i<tags[tagsSelecionadas.get(j)].aparicoesNoTexto.size(); i++) {
-        palavrasSelecionadas.add(caracteresInfo[tags[tagsSelecionadas.get(j)].aparicoesNoTexto.get(i)]);
+    if (listaDePalavras[tagsSelecionadas.get(j)] != null) {
+      for (int i=0; i<listaDePalavras[tagsSelecionadas.get(j)].aparicoesNoTexto.size(); i++) {
+        palavrasSelecionadas.add(caracteresInfo[listaDePalavras[tagsSelecionadas.get(j)].aparicoesNoTexto.get(i)]);
       }
     }
   }
@@ -602,19 +613,19 @@ void desenhaConexoes() {
 }
 
 void desenhaConexoesTag (int i, PVector p1, PVector p2, int brilho, float grossura) {
-  if (tags == null || tags[i] == null) {
+  if (listaDePalavras == null || listaDePalavras[i] == null) {
     return;
   }
-  p1.x = tags[i].pos.x;
-  int numAparicoes = tags[i].aparicoesNoTexto.size();
+  p1.x = listaDePalavras[i].pos.x;
+  int numAparicoes = listaDePalavras[i].aparicoesNoTexto.size();
   for (int j=0; j<numAparicoes; j++) {
-    p1.y = tags[i].pos.y-j*tamTags-tamTags/2.0;
-    int caracIndice = tags[i].aparicoesNoTexto.get(numAparicoes-1-j);
+    p1.y = listaDePalavras[i].pos.y-j*tamTags-tamTags/2.0;
+    int caracIndice = listaDePalavras[i].aparicoesNoTexto.get(numAparicoes-1-j);
     p2.x = caracteresInfo[caracIndice].pos.x;
     p2.y = caracteresInfo[caracIndice].pos.y;
     textSize(tamTexto*height); //para posicionar linha no meio da palavra.
-    float larguraPalavraPx = textWidth(textoSeparadoPorPalavras[tags[i].palavra]);
-    stroke(tags[i].matiz, 255, brilho);
+    float larguraPalavraPx = textWidth(textoSeparadoPorPalavras[listaDePalavras[i].palavra]);
+    stroke(listaDePalavras[i].matiz, 255, brilho);
     strokeWeight(tamTexto*height*grossura);
     line(p1.x*width, p1.y*height, 
       p2.x*width+larguraPalavraPx/2, 
@@ -626,9 +637,9 @@ void desenhaConexoesTag (int i, PVector p1, PVector p2, int brilho, float grossu
     if (pos2Y <= height && pos2Y > -tamTexto*height) {
       rectMode(CORNER);
       noStroke();
-      fill(tags[i].matiz, 255, brilho);
+      fill(listaDePalavras[i].matiz, 255, brilho);
       if (palavraSelecionadaAtual == caracteresInfo[caracIndice]) {
-        fill(tags[i].matiz, 255, brilhoPalavraAtual);
+        fill(listaDePalavras[i].matiz, 255, brilhoPalavraAtual);
       }
       rect(p2.x*width-destaquePx, 
         pos2Y, 
@@ -655,34 +666,34 @@ void desenhaTexto() {
 
 void desenhaTags() {
   textSize(tamTags*height);
-  if (ultimaTagVisivel > 0 && tags[ultimaTagVisivel] == null) {
+  if (ultimaTagVisivel > 0 && listaDePalavras[ultimaTagVisivel] == null) {
     ultimaTagVisivel--;
   }
   for (int i=0; i<=ultimaTagVisivel; i++) {
     colorMode(HSB);
-    if (tags[i].mouseEmCima || tagsSelecionadas.contains(i)) {
-      fill(tags[i].matiz, 255, brilhoConexoesSelecionada);
+    if (listaDePalavras[i].mouseEmCima || tagsSelecionadas.contains(i)) {
+      fill(listaDePalavras[i].matiz, 255, brilhoConexoesSelecionada);
     } else {
-      fill(tags[i].matiz, 255, brilhoConexoes);
+      fill(listaDePalavras[i].matiz, 255, brilhoConexoes);
     }
-    if (tags[i].mouseClicando) {
-      fill(tags[i].matiz, 255, brilhoConexoesMouseClicando);
+    if (listaDePalavras[i].mouseClicando) {
+      fill(listaDePalavras[i].matiz, 255, brilhoConexoesMouseClicando);
     }
     noStroke();
     rectMode(CORNERS);
-    rect(tags[i].retangulo[0].x*width, tags[i].retangulo[0].y*height, 
-      tags[i].retangulo[1].x*width, tags[i].retangulo[1].y*height);
+    rect(listaDePalavras[i].retangulo[0].x*width, listaDePalavras[i].retangulo[0].y*height, 
+      listaDePalavras[i].retangulo[1].x*width, listaDePalavras[i].retangulo[1].y*height);
   }
   for (int i=0; i<=ultimaTagVisivel; i++) {
-    float alturaTag = tags[i].frequencia*tamTags;
+    float alturaTag = listaDePalavras[i].frequencia*tamTags;
     textSize(alturaTag*height);
     colorMode(HSB);
     noStroke();
     rectMode(CENTER);
     verificaFonte(alturaTag, true);
     fill(255); 
-    text(textoSeparadoPorPalavras[tags[i].palavra]+" ("+tags[i].frequencia+")", 
-      tags[i].pos.x*width, tags[i].pos.y*height);
+    text(textoSeparadoPorPalavras[listaDePalavras[i].palavra]+" ("+listaDePalavras[i].frequencia+")", 
+      listaDePalavras[i].pos.x*width, listaDePalavras[i].pos.y*height);
   }
 }
 
@@ -697,7 +708,7 @@ boolean mouseEmCima ( float ret1x, float ret1y, float ret2x, float ret2y) {
 void mouseReleased() {
   if (mouseButton == RIGHT) {
     if (tagMouseEmCima > -1) {
-      palavrasIgnoradas.add(textoSeparadoPorPalavras[tags[tagMouseEmCima].palavra]);
+      palavrasIgnoradas.add(textoSeparadoPorPalavras[listaDePalavras[tagMouseEmCima].palavra]);
       if (tagsSelecionadas.contains(tagMouseEmCima)) {
         tagsSelecionadas.remove(Integer.valueOf(tagMouseEmCima));
       }
