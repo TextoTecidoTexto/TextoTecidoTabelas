@@ -391,32 +391,39 @@ boolean analisaTexto() {
   // e o texto é desenhado incompleto, recomeçando no próximo loop, já com o tamanho ajustado,
   // criando o efeito de animação da área de texto sendo preenchida, ao passar dos quadros.
   for (int i=0; i<texto.length(); i++) {
-    //Checa se formou uma nova palavra:
+    //Checa se o caractere atual separa palavras:
     boolean caracAtualSeparaPalavras = false;
     if (match(""+texto.charAt(i), "["+separadoresPalavras+"]") != null) {
       caracAtualSeparaPalavras = true;
     }
 
-    //Define qual deve ser a posição do caractere atual.
-    textSize(tamTexto*height);
-    float larguraPx = textWidth(texto.charAt(i));      //Largura que o caractere ocupará na tela em pixels
-    if (match(""+texto.charAt(i), "["+quebraLinha+"]") != null) { //Se caractere atual quebra linha
+    //Calcula qual deverá ser a posição do caractere atual em relação à tela.
+    textSize(tamTexto*height); // define o tamanho do texto para textWidth() poder calcular
+                               // a largura na tela do caractere atual.
+    float larguraCaracPx = textWidth(texto.charAt(i));      //Largura que o caractere atual ocupará na tela em pixels
+  
+    //Se caractere atual quebra linha
+    if (match(""+texto.charAt(i), "["+quebraLinha+"]") != null) {
+      // Cria um novo caractere informando a posição do posVarredura, largura q o caractere ocupa,
+      // se é separador de palavras, índice da palavra a qual esse caractere pertence (palavraAtual),
+      // e a linha a qual pertence (numLinhas informa qual a linha atual)
       caracteresInfo[i] = new Caractere(new PVector(posVarredura.x, posVarredura.y), 
-        larguraPx, caracAtualSeparaPalavras, palavraAtual, numLinhas);
-      posVarredura.y += tamTexto;
-      posVarredura.x = 0;
-      larguraLinhaPx = 0;
+        larguraCaracPx, caracAtualSeparaPalavras, palavraAtual, numLinhas);
+
+      posVarredura.y += tamTexto; // Incrementa na altura de uma linha o "cursor" que posiciona os caracteres.
+      posVarredura.x = 0;         // Como ocorre uma quebra de linha a posição X é no canto esquerdo (=0); 
+      larguraLinhaPx = 0;         // Como ocorre uma quebra de linha o contador da largura da linha deve ser zerado; 
       if (!adicionarLinha(alturaAreaTexto)) {
         if (ajustarParaExibirTextoCompleto) {
           retorno = false;
           break;
         }
       }
-    } else {                                              //Se caractere atual não quebra linha
+    } else { //Se caractere atual não quebra linha
       caracteresInfo[i] = new Caractere(new PVector(posVarredura.x, posVarredura.y), 
-        larguraPx, caracAtualSeparaPalavras, palavraAtual, numLinhas);
-      larguraLinhaPx += larguraPx;
-      posVarredura.x += larguraPx/width;
+        larguraCaracPx, caracAtualSeparaPalavras, palavraAtual, numLinhas);
+      larguraLinhaPx += larguraCaracPx;
+      posVarredura.x += larguraCaracPx/width;
       if (larguraLinhaPx > larguraAreaTexto*width) {          //Palavra passsou do limite da area do texto.
         if (!caracAtualSeparaPalavras) {
           if (palavraAtual > 0) {
@@ -489,14 +496,16 @@ boolean analisaTexto() {
   return retorno;
 }
 
+// Incrementa a contagem de linhas de texto e se a altura final ultrapassar
+// a altura da área de texto, reduz o tamanho da fonte e retorna false.
 boolean adicionarLinha(float alturaAreaTexto) {
   boolean coubeNaAreaTexto = true;
-  alturaTexto += tamTexto;
+  alturaTexto += tamTexto;            // ajusta a informação da altura ocupada pelo texto.
   numLinhas++;
   if (alturaTexto > alturaAreaTexto) {          //Se altura do texto ultrapassar o limite
     if (ajustarParaExibirTextoCompleto) {
-      tamTexto *= alturaAreaTexto/alturaTexto;    //diminui o tamanho do texto.
-      tamTexto *= 0.9;
+//      tamTexto *= alturaAreaTexto/alturaTexto;
+      tamTexto *= 0.9;                            // Reduz o tamanho da fonte em 90%
     }
     coubeNaAreaTexto = false;
   }
