@@ -2,13 +2,15 @@
 Localiza palavras de um texto em tabelas.
 
 ## Status
-Ainda está em desenvolvimento da primeira versão funcional para entrega no componente de Computação Musical da Pós-graduação do CIn-UFPE.
+Estamos em fase de desenvolvimento da primeira versão funcional para entrega no componente de Computação Musical da Pós-graduação do CIn-UFPE.
 
 ## Contexto
 Este projeto é uma variação do TextoTecidoPalavras que localiza palavras mais frequentes num texto:
+
 https://github.com/jarbasjacome/TextoTecidoPalavras
 
 Os dois projetos fazem parte do TextoTecidoTexto:
+
 https://github.com/TextoTecidoTexto
 
 ## Como rodar com Processing (serve para Windows, Linux e MacOS)
