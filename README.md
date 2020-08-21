@@ -21,7 +21,7 @@ https://github.com/TextoTecidoTexto
 
 Opção 1. Baixe o arquivo .zip clicando em: https://github.com/TextoTecidoTexto/TextoTecidoTabelas/archive/master.zip e depois extraia o conteúdo em uma pasta de sua preferência.
 
-Opção 2. Clone esse repositório (ex.: 'git clone https://github.com/TextoTecidoTexto/TextoTecidoTabelas'). Para um guia rápido do Git: https://rogerdudler.github.io/git-guide/index.pt_BR.html 
+Opção 2. Clone esse repositório (ex.: `git clone https://github.com/TextoTecidoTexto/TextoTecidoTabelas`). Para um guia rápido do Git: https://rogerdudler.github.io/git-guide/index.pt_BR.html 
 
 3 - Abra o arquivo TextoTecidoPalavras.pde no Processing.
 
