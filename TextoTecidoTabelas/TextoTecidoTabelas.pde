@@ -51,7 +51,6 @@ float tamTexto = 1;
 float tamTextoManual = 1;
 boolean ajustarParaExibirTextoCompleto = true;
 float tamTags = 1;
-//int TAM_MAX_TEXTO = 10000;
 int TAM_MAX_PALAVRA = 200;
 float margemEsqTexto = 0.0;
 float margemDirTexto = 0.5;
@@ -413,30 +412,35 @@ boolean analisaTexto() {
       posVarredura.y += tamTexto; // Incrementa na altura de uma linha o "cursor" que posiciona os caracteres.
       posVarredura.x = 0;         // Como ocorre uma quebra de linha a posição X é no canto esquerdo (=0); 
       larguraLinhaPx = 0;         // Como ocorre uma quebra de linha o contador da largura da linha deve ser zerado; 
-      if (!adicionarLinha(alturaAreaTexto)) {
-        if (ajustarParaExibirTextoCompleto) {
-          retorno = false;
-          break;
+      if (!adicionarLinha(alturaAreaTexto)) {    // Se adiciona linha e texto não cabe...
+        if (ajustarParaExibirTextoCompleto) {    // Se estiver exibindo texto todo...
+          retorno = false;                       // analisaTexto() retorna falso, pois precisa ser chamada de novo
+          break;                                 // e para o for. Isso serve para fazer o efeito de animação do
+                                                 // texto preenchendo.
         }
       }
     } else { //Se caractere atual não quebra linha
       caracteresInfo[i] = new Caractere(new PVector(posVarredura.x, posVarredura.y), 
         larguraCaracPx, caracAtualSeparaPalavras, palavraAtual, numLinhas);
-      larguraLinhaPx += larguraCaracPx;
-      posVarredura.x += larguraCaracPx/width;
-      if (larguraLinhaPx > larguraAreaTexto*width) {          //Palavra passsou do limite da area do texto.
-        if (!caracAtualSeparaPalavras) {
+      larguraLinhaPx += larguraCaracPx;        // incrementa o contador de largura da linha em pixels.
+      posVarredura.x += larguraCaracPx/width;  // incrementa a posição x do "cursor" que posiciona os caracteres.
+      if (larguraLinhaPx > larguraAreaTexto*width) {          //Linha ultrapasssou a largura da área do texto.
+        if (!caracAtualSeparaPalavras) {       // se o caractere atual não é um separador de palavras 
           if (palavraAtual > 0) {
             if (textWidth(textoSeparadoPorPalavras[palavraAtual-1]) > larguraAreaTexto*width) {
-              //if (ajustarParaExibirTextoCompleto) {
+              // Entra aqui se a própria palavra (não apenas a linha) ultrapassa a largura da área de texto.
+              // calcula um novo tamanho de texto suficientemente pequeno para caber na largura essa palavra.
               tamTexto *= larguraAreaTexto*width/(float)larguraLinhaPx;
-              retorno = false;
-              break;
-              //}
-            } else {
-              posVarredura.y += tamTexto;
-              posVarredura.x = 0;
-              larguraLinhaPx = 0;
+              retorno = false;               // analisaTexto() retorna falso, pois precisa ser chamada de novo
+              break;                         // e para o for. Isso serve para fazer o efeito de animação do
+                                             // texto preenchendo.
+            } else { // a palavra sozinha não ultrapassa a largura da área de texto.
+              posVarredura.y += tamTexto;    // passa o cursor para próxima linha.
+              posVarredura.x = 0;            // posiciona o cursor no lado esquerdo.
+              larguraLinhaPx = 0;            // reinicia a variável que conta a largura da linha.
+
+              // aqui começa uma gambiarra feiosa para reposicionar todos os caracteres dessa palavra para
+              // que ela seja movida para a próxima linha, no lado esquedo.
               int j=i;
               while (!caracteresInfo[j].ehSeparador) {        //Volta até achar o início da palavra.
                 j--;
@@ -449,6 +453,8 @@ boolean analisaTexto() {
                 posVarredura.x += caracteresInfo[j].larguraPx/width;
                 larguraLinhaPx += caracteresInfo[j].larguraPx;
               }
+              // Como ele moveu a palavra que ultrapassou a largura, para baixo, precisa adicionar uma nova linha
+              // e reanalisar o texto, caso esteja no modo de ajuste automático para exibir texto completo.
               if (!adicionarLinha(alturaAreaTexto)) {
                 if (ajustarParaExibirTextoCompleto) {
                   retorno = false;
@@ -506,6 +512,9 @@ boolean adicionarLinha(float alturaAreaTexto) {
     if (ajustarParaExibirTextoCompleto) {
 //      tamTexto *= alturaAreaTexto/alturaTexto;
       tamTexto *= 0.9;                            // Reduz o tamanho da fonte em 90%
+                                                  //[TODO] Essa redução determina a velocidade de animação
+                                                  // do texto preenchendo a área de texto. Melhor fazer
+                                                  // isso como um parâmetro de velocidade.
     }
     coubeNaAreaTexto = false;
   }
