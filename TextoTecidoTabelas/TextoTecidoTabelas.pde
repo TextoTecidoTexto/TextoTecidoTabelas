@@ -54,7 +54,7 @@ boolean ajustarParaExibirTextoCompleto = true;
 float tamTags = 1;
 int TAM_MAX_PALAVRA = 200;
 float margemEsqTexto = 0.0;
-float margemDirTexto = 0.5;
+float margemDirTexto = 0.6;
 float margemSupTexto = 0.0;
 float margemInfTexto = 1.0;
 float margemEsqTags = margemDirTexto;
@@ -105,8 +105,8 @@ boolean exibirStatusTecladoMouse = true;
 
 void setup()
 {
-  size(800,600);
-  //fullScreen();
+  //size(800,600);
+  fullScreen();
   background (0);
   fonte500 = loadFont("Cantarell-Bold-500.vlw");
   fonte48 = loadFont("Cantarell-Bold-48.vlw");
